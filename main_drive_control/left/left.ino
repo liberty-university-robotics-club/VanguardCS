@@ -12,8 +12,24 @@ int buttonBState = 0;
 int speedValue = 0;
 int eStatus = 0;
 
-void stopIfFault()
-{
+typedef struct t  {
+  unsigned long tStart;
+  unsigned long tTimeout;
+};
+
+// Tasks and their Schedules.
+t t_func1 = {0, 100}; //Run every 100 microseconds
+t t_func2 = {0, 2000}; //Run every 2 milliseconds.
+
+bool tCheck (struct t *t ) {
+  if (micros() > t->tStart + t->tTimeout) return true;    
+}
+
+void tRun (struct t *t) {
+    t->tStart = micros();
+}
+
+void stopIfFault() {
   if (md.getM1Fault())
   {
     Serial.println("M1 fault");
@@ -27,8 +43,7 @@ void stopIfFault()
   }
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   Serial.println("Dual VNH5019 Motor Shield");
   md.init();
@@ -37,18 +52,24 @@ void setup()
   pinMode(eStop, INPUT);
 }
 
-void loop()
-{
+void loop() {
+
+  if (tCheck(&mainDrive)) {
+    func1();
+    tRun(&mainDrive);
+  }
+    
+  if (tCheck(&sysReport)) {
+    func2();
+    tRun(&sysReport);
+  }  
+}
+
+void mainDrive (void){
   eStatus = digitalRead(eStop);
   buttonFState = digitalRead(buttonPinF);
   buttonBState = digitalRead(buttonPinB);
   speedValue = map(analogRead(speedSensor), 0, 1023 , 0, 400);
-  
-  Serial.print("M1 current: ");
-  Serial.println(md.getM1CurrentMilliamps());
-  Serial.print("M2 current: ");
-  Serial.println(md.getM2CurrentMilliamps());
-  Serial.println(speedValue);
 
   if (eStatus == HIGH) {
     md.setBrakes(400, 400);
@@ -60,11 +81,30 @@ void loop()
     stopIfFault();
     }
   }
+  if (buttonFState == LOW) {
+    for(int i = 0 ;  i >= speedValue; i--){
+    md.setSpeeds(i, i);
+    stopIfFault();
+    }
+  }
   if (buttonFState == HIGH) {
     for(int i = 0 ;  i <= speedValue; i++){
     md.setSpeeds(-i, -i);
     stopIfFault();
     }
   }
-  
+  if (buttonFState == LOW) {
+    for(int i = 0 ;  i >= speedValue; i--){
+    md.setSpeeds(-i, -i);
+    stopIfFault();
+    }
+  }
+}
+
+void sysReport (void){
+  Serial.print("M1 current: ");
+  Serial.println(md.getM1CurrentMilliamps());
+  Serial.print("M2 current: ");
+  Serial.println(md.getM2CurrentMilliamps());
+  Serial.println(speedValue);
 }

@@ -1,4 +1,5 @@
 #include "DualVNH5019MotorShield.h"
+#include <SPI.h>
 
 DualVNH5019MotorShield md;
 
@@ -29,6 +30,7 @@ void stopIfFault() {
 void setup() {
   Serial.begin(115200);
   Serial.println("Dual VNH5019 Motor Shield");
+  SPI.begin();
   md.init();
   pinMode(buttonPinF, INPUT);
   pinMode(buttonPinB, INPUT);

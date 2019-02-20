@@ -3,21 +3,20 @@
 
 DualVNH5019MotorShield md;
 
-char buf [100];
-volatile byte pos;
-volatile bool process_it;
+int right = 0;
+int left = 0;
 
 void stopIfFault() {
   if (md.getM1Fault())
   {
     Serial.println("M1 fault");
-    delay(1000);
+    while(1);
     
   }
   if (md.getM2Fault())
   {
     Serial.println("M2 fault");
-    delay(1000);
+    while(1);
   }
 }
 
@@ -26,52 +25,28 @@ void setup() {
   Serial.println("Dual VNH5019 Motor Shield");
   md.init();
   
-  // turn on SPI in slave mode
-  SPCR |= bit (SPE);
-
   // have to send on master in, *slave out*
-  pinMode (MISO, OUTPUT);
+  pinMode(MISO, OUTPUT);
 
-  // get ready for an interrupt
-  pos = 0;   // buffer empty
-  process_it = false;
+  // turn on SPI in slave mode
+  SPCR |= _BV(SPE);
 
-  // now turn on interrupts
-  SPI.attachInterrupt();
+  // turn on interrupts
+  SPCR |= _BV(SPIE);
 
 }
 
 // SPI interrupt routine
-ISR (SPI_STC_vect)
-{
-byte c = SPDR;  // grab byte from SPI Data Register
+ISR (SPI_STC_vect) {
+  
+  int right = SPDR;
+  int left = SPDR;
 
-  // add to buffer if room
-  if (pos < sizeof buf)
-    {
-    buf [pos++] = c;
+  md.setM1Speed(right);
+  md.setM1Speed(left);
 
-    // example: newline means time to process buffer
-    if (c == '\n')
-      process_it = true;
-
-    }  // end of room available
-}  // end of interrupt routine SPI_STC_vect
+}
 
 void loop() {
-
-  if (process_it)
-    {
-    buf [pos] = 0;
-    Serial.println (buf);
-    pos = 0;
-    process_it = false;
-    }  // end of flag set
-
-  
-
-  
-  
-  
-  
+  stopIfFault();
 }

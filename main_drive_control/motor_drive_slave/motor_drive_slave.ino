@@ -6,6 +6,8 @@ DualVNH5019MotorShield md;
 int right = 0;
 int left = 0;
 
+//============
+
 void stopIfFault() {
   if (md.getM1Fault())
   {
@@ -20,13 +22,17 @@ void stopIfFault() {
   }
 }
 
+//============
+
 void setup() {
   Serial.begin(115200);
-  Serial.println("Dual VNH5019 Motor Shield");
+  Serial.println("Motor control - Slave");
   md.init();
   
-  // have to send on master in, *slave out*
+  
   pinMode(MISO, OUTPUT);
+  pinMode(MOSI, INPUT);
+  pinMode(SS, INPUT);
 
   // turn on SPI in slave mode
   SPCR |= _BV(SPE);
@@ -36,6 +42,8 @@ void setup() {
 
 }
 
+//============
+
 // SPI interrupt routine
 ISR (SPI_STC_vect) {
   
@@ -43,10 +51,13 @@ ISR (SPI_STC_vect) {
   int left = SPDR;
 
   md.setM1Speed(right);
-  md.setM1Speed(left);
+  md.setM2Speed(left);
+  stopIfFault();
 
 }
 
+//============
+
 void loop() {
-  stopIfFault();
+  
 }

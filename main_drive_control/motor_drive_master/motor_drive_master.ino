@@ -16,17 +16,25 @@ int prevLeft = 0;
 
 boolean newData = false;
 
+//============
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Motor control - Master");
+
+  SPI.begin();
+
+  pinMode(SS1, OUTPUT);
+  pinMode(SS2, OUTPUT);
+  pinMode(SS3, OUTPUT);
 
   digitalWrite(SS1, HIGH);
   digitalWrite(SS2, HIGH);
   digitalWrite(SS3, HIGH);
 
-  SPI.begin();
-
 }
+
+//============
 
 void loop() {
   
@@ -52,12 +60,13 @@ void loop() {
         digitalWrite(SS2, HIGH);
         digitalWrite(SS3, LOW);
         SPI.transfer(right, left);
-        digitalWrite(SS3, HIGH);   
+        digitalWrite(SS3, HIGH);  
+        prevRight = right;
+        prevLeft = left; 
     }
-
-    prevRight = right;
-    prevLeft = left;
 }
+
+//============
 
 void recvWithStartEndMarkers() {
     static boolean recvInProgress = false;
@@ -78,7 +87,8 @@ void recvWithStartEndMarkers() {
                 }
             }
             else {
-                receivedChars[ndx] = '\0'; // terminate the string
+                // terminate the string
+                receivedChars[ndx] = '\0'; 
                 recvInProgress = false;
                 ndx = 0;
                 newData = true;
@@ -97,11 +107,17 @@ void parseData() {      // split the data into its parts
 
     char * strtokIndx; // this is used by strtok() as an index
 
-    strtokIndx = strtok(tempChars,",");      // get the first part - the string
-    right = atoi(strtokIndx); // copy it to messageFromPC
+    // get the first part - the string
+    strtokIndx = strtok(tempChars,","); 
+
+    // convert this part to an integer
+    right = atoi(strtokIndx); 
  
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    left = atoi(strtokIndx);     // convert this part to an integer
+    // this continues where the previous call left off
+    strtokIndx = strtok(NULL, ","); 
+
+    // convert this part to an integer
+    left = atoi(strtokIndx);     
 
 }
 

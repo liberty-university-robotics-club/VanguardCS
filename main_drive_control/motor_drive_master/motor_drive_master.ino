@@ -1,8 +1,4 @@
-#include <SPI.h>
-
-const int SS1 = 10;
-const int SS2 = 9;
-const int SS3 = 8;
+#include <Wire.h>
 
 const byte numChars = 32;
 char receivedChars[numChars];
@@ -19,19 +15,11 @@ boolean newData = false;
 //============
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Motor control - Master");
+    // join i2c bus
+    Wire.begin();
 
-  SPI.begin();
-
-  pinMode(SS1, OUTPUT);
-  pinMode(SS2, OUTPUT);
-  pinMode(SS3, OUTPUT);
-
-  digitalWrite(SS1, HIGH);
-  digitalWrite(SS2, HIGH);
-  digitalWrite(SS3, HIGH);
-
+    Serial.begin(115200);
+    Serial.println("Motor control - Master");
 }
 
 //============
@@ -50,20 +38,27 @@ void loop() {
 
         newData = false;
     }
-    if (right != prevRight || left != prevLeft) {
-        // enable Slave Select and send speed values
-        digitalWrite(SS1, LOW);
-        SPI.transfer(right, left);
-        digitalWrite(SS1, HIGH);
-        digitalWrite(SS2, LOW);
-        SPI.transfer(right, left);
-        digitalWrite(SS2, HIGH);
-        digitalWrite(SS3, LOW);
-        SPI.transfer(right, left);
-        digitalWrite(SS3, HIGH);  
+    if ((right != prevRight) || (left != prevLeft)) {
+        Wire.beginTransmission(0xA);    // transmit to device 0xA
+        Wire.write(right);              // sends data
+        Wire.write(left);               // sends data
+        Wire.endTransmission();
+        Wire.beginTransmission(0xB);    // transmit to device 0xB
+        Wire.write(right);              // sends data
+        Wire.write(left);               // sends data
+        Wire.endTransmission();
+        Wire.beginTransmission(0xC);    // transmit to device 0xC
+        Wire.write(right);              // sends data
+        Wire.write(left);               // sends data
+        Wire.endTransmission();
         prevRight = right;
         prevLeft = left; 
     }
+    Serial.println("right: ");
+    Serial.print(right);
+    Serial.println("left: ");
+    Serial.print(left);
+    delay(100);
 }
 
 //============

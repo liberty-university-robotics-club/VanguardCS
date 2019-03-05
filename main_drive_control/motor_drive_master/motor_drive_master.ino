@@ -9,6 +9,8 @@ int right = 0;
 int left = 0;	
 int prevRight = 0;
 int prevLeft = 0;
+int rightN;
+int leftN;
 
 boolean newData = false;
 
@@ -34,30 +36,31 @@ void loop() {
             //   because strtok() used in parseData() replaces the commas with \0
         parseData();
 
-        //showParsedData();
-
         newData = false;
     }
     if ((right != prevRight) || (left != prevLeft)) {
         Wire.beginTransmission(0xA);    // transmit to device 0xA
-        Wire.write(right);              // sends data
-        Wire.write(left);               // sends data
+        Wire.write(right);              // sends speed
+        Wire.write(rightN);             // sends 1 if negative and 0 if positive
+        Wire.write(left);               // sends speed
+        Wire.write(leftN);              // sends 1 if negative and 0 if positive
         Wire.endTransmission();
         Wire.beginTransmission(0xB);    // transmit to device 0xB
-        Wire.write(right);              // sends data
-        Wire.write(left);               // sends data
+        Wire.write(right);              // sends speed
+        Wire.write(rightN);             // sends 1 if negative and 0 if positive
+        Wire.write(left);               // sends speed
+        Wire.write(leftN);              // sends 1 if negative and 0 if positive
         Wire.endTransmission();
         Wire.beginTransmission(0xC);    // transmit to device 0xC
-        Wire.write(right);              // sends data
-        Wire.write(left);               // sends data
+        Wire.write(right);              // sends speed
+        Wire.write(rightN);             // sends 1 if negative and 0 if positive
+        Wire.write(left);               // sends speed
+        Wire.write(leftN);              // sends 1 if negative and 0 if positive
         Wire.endTransmission();
+        
         prevRight = right;
         prevLeft = left; 
     }
-    Serial.println("right: ");
-    Serial.print(right);
-    Serial.println("left: ");
-    Serial.print(left);
     delay(100);
 }
 
@@ -107,23 +110,29 @@ void parseData() {      // split the data into its parts
 
     // convert this part to an integer
     right = atoi(strtokIndx); 
- 
+    Serial.print("right: ");
+    Serial.println(right);
+    if (right < 0) {
+        rightN = 1;
+        right = right * -1;
+    }
+    else {
+        rightN = 0;
+    }
+    
     // this continues where the previous call left off
     strtokIndx = strtok(NULL, ","); 
 
     // convert this part to an integer
-    left = atoi(strtokIndx);     
+    left = atoi(strtokIndx); 
+    Serial.print("left: ");
+    Serial.println(left); 
+    if (right < 0) {
+        leftN = 1;
+        left = left * -1;
+    }
+    else {
+        leftN = 0;
+    }   
 
-}
-
-//============
-
-void showParsedData() {
-    Serial.println();
-    Serial.print("Right ");
-    Serial.println(right);
-    Serial.println();
-    Serial.print("Left ");
-    Serial.println(left);
-    Serial.println();
 }

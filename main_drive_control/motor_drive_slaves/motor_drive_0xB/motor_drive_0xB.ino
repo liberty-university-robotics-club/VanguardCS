@@ -3,8 +3,10 @@
 
 DualVNH5019MotorShield md;
 
-int right = 0;
-int left = 0;
+int right;
+int left;
+int rightN;
+int leftN;
 
 //============
 
@@ -12,13 +14,14 @@ void stopIfFault() {
   if (md.getM1Fault())
   {
     Serial.println("M1 fault");
-    while(1);
-    
+    delay(1000);
+    return;
   }
   if (md.getM2Fault())
   {
     Serial.println("M2 fault");
-    while(1);
+    delay(1000);
+    return;
   }
 }
 
@@ -31,20 +34,27 @@ void setup() {
   
   Wire.begin(0xB);                // join i2c bus with address 0xB
   Wire.onReceive(receiveEvent);   // register event
-
 }
 
 //============
 
 void receiveEvent(int howMany){
-  while(1 < Wire.available()){
-    int right = Wire.read();
-    Serial.println("right: ");
-    Serial.print(right);
+  right = Wire.read();
+  rightN = Wire.read();
+  left = Wire.read();
+  leftN = Wire.read();
+
+  // set the speeds to negative if condition is true
+  if (rightN == 1){
+    right = right * -1;
   }
-  int left = Wire.read();
-  Serial.println("left: ");
-  Serial.print(left);
+  if (leftN == 1){
+    left = left * -1;
+  }
+  Serial.print("right: ");
+  Serial.println(right);
+  Serial.print("left: ");
+  Serial.println(left);
 
   md.setSpeeds(right, left);
 }

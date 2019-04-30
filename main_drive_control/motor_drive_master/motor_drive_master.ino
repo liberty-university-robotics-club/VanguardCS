@@ -127,7 +127,7 @@ void parseData() {      // split the data into its parts
     left = atoi(strtokIndx); 
     Serial.print("left: ");
     Serial.println(left); 
-    if (right < 0) {
+    if (left < 0) {
         leftN = 1;
         left = left * -1;
     }

@@ -39,11 +39,12 @@ void setup() {
 //============
 
 void receiveEvent(int howMany){
+  while (Wire.available()){
   right = Wire.read();
   rightN = Wire.read();
   left = Wire.read();
   leftN = Wire.read();
-
+  }
   // set the speeds to negative if condition is true
   if (rightN == 1){
     right = right * -1;

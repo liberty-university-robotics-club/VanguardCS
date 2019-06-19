@@ -1,10 +1,6 @@
 #include <iostream>
-#include <stdio.h>      // standard input / output functions
-#include <stdlib.h>
-#include <string.h>     // string function definitions
-#include <unistd.h>     // UNIX standard function definitions
-#include <fcntl.h>      // File control definitions
-#include <termios.h>    // POSIX terminal control definitions
+#include <string>           // string function definitions
+#include "serialUtil.h"
 
 int main(int argc, char *argv[]){
     std::string message = "";
@@ -19,17 +15,39 @@ int main(int argc, char *argv[]){
     std::cout << p << std::endl;
     std::cout << pathLen << std::endl;
 
-//------------------------------- Opening the Serial Port -------------------------------
+    //passes device file and opens it
+    serialUtil s1(p);
+    s1.open(B9600);
+
+    // TEST CODE
+    // asks user for text then sends it to arduino over serial and loops
+    while(true){
+        message = "";
+        std::cout << "Enter Text: ";
+        std::getline(std::cin, message);
+        if(message == "-d")
+            break;
+        
+        s1.write(message);
+    }
+    //closes com port
+    s1.close();
+
+	return 0;
+}
+//legacy unused
+/*
+    //------------------------------- Opening the Serial Port -------------------------------
     int fd;                             //device file id
     fd = open(p, O_RDWR | O_NOCTTY);
     if(fd == -1)                        // Error Checking 
         printf("Error while opening the device: %s\n", p);
 
-//---------- Setting the Attributes of the serial port using termios structure ---------
+    //---------- Setting the Attributes of the serial port using termios structure ---------
     struct termios SerialPortSettings;  // Create the structure                          
     tcgetattr(fd, &SerialPortSettings); // Get the current attributes of the Serial port
 
-// Setting the Baud rate
+    // Setting the Baud rate
     cfsetispeed(&SerialPortSettings, B9600); // Set Read  Speed as 9600                       
     cfsetospeed(&SerialPortSettings, B9600); // Set Write Speed as 9600                       
 
@@ -43,14 +61,14 @@ int main(int argc, char *argv[]){
     SerialPortSettings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);  // Non Cannonical mode 
     SerialPortSettings.c_oflag &= ~OPOST;                           //No Output Processing
 
-// Setting Time outs 
+    // Setting Time outs 
     SerialPortSettings.c_cc[VMIN] = 1;  // Read at least 1 characters 
     SerialPortSettings.c_cc[VTIME] = 0; // Wait indefinetly  
 
     if((tcsetattr(fd, TCSANOW, &SerialPortSettings)) != 0) // Set the attributes to the termios structure
     printf("Error while setting attributes \n");
 
-    /* Flush Port */
+    // Flush Port 
     tcflush(fd, TCIFLUSH );
 
     // TEST CODE
@@ -71,6 +89,4 @@ int main(int argc, char *argv[]){
         write(fd, &str, messageLen);
     }
     close(fd);
- 
-	return 0;
-}
+*/

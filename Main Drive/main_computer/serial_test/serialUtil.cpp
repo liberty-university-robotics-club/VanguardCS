@@ -7,9 +7,14 @@ serialUtil::serialUtil(const char *device){
 
 bool serialUtil::open(speed_t baud){
 
+    if (m_fd >= 0){
+        close();
+    }
+
     //------------------------------- Opening the Serial Port -------------------------------
     m_fd = ::open(m_dev, O_RDWR | O_NOCTTY);
-    if(m_fd == -1) {                       // Error Checking 
+
+    if(m_fd < 0) {                       // Error Checking 
         printf("Error while opening the device: %s\n", m_dev);
         return false;
     }
@@ -30,7 +35,7 @@ bool serialUtil::open(speed_t baud){
     SerialPortSettings.c_cflag |= CREAD | CLOCAL;                   // Enable receiver,Ignore Modem Control lines        
     SerialPortSettings.c_iflag &= ~(IXON | IXOFF | IXANY);          // Disable XON/XOFF flow control both i/p and o/p 
     SerialPortSettings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);  // Non Cannonical mode 
-    SerialPortSettings.c_oflag &= ~OPOST;                           //No Output Processing
+    SerialPortSettings.c_oflag &= ~OPOST;                           // No Output Processing
 
     // Setting Time outs 
     SerialPortSettings.c_cc[VMIN] = 1;  // Read at least 1 characters 
@@ -46,6 +51,7 @@ bool serialUtil::open(speed_t baud){
 }
 
 void serialUtil::close(){
+    tcdrain(m_fd);
     ::close(m_fd);
     m_fd = -1;
 }
@@ -55,4 +61,34 @@ void serialUtil::write(std::string message){
     char str[messageLen];
     message.copy(str, messageLen);
     ::write(m_fd, &str, messageLen);
+}
+
+int serialUtil::available(void) {
+	if (m_fd < 0) {
+		return 0;
+	}
+
+	fd_set rfds;
+	struct timeval tv;
+
+	FD_ZERO(&rfds);
+	FD_SET(m_fd, &rfds);
+	tv.tv_sec = 0;
+	tv.tv_usec = 1;
+	int retval = select(m_fd+1, &rfds, NULL, NULL, &tv);
+	if (retval) {
+		return 1;
+	}
+	return 0;
+}
+
+int serialUtil::read(void) {
+	if (!available()) {
+		return -1;
+	}
+	uint8_t c;
+	if (::read(m_fd, &c, 1) <= 0) {
+		return -1;
+	}
+	return c;
 }

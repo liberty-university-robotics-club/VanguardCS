@@ -63,32 +63,9 @@ void serialUtil::write(std::string message){
     ::write(m_fd, &str, messageLen);
 }
 
-int serialUtil::available(void) {
-	if (m_fd < 0) {
-		return 0;
-	}
-
-	fd_set rfds;
-	struct timeval tv;
-
-	FD_ZERO(&rfds);
-	FD_SET(m_fd, &rfds);
-	tv.tv_sec = 0;
-	tv.tv_usec = 1;
-	int retval = select(m_fd+1, &rfds, NULL, NULL, &tv);
-	if (retval) {
-		return 1;
-	}
-	return 0;
-}
-
-int serialUtil::read(void) {
-	if (!available()) {
-		return -1;
-	}
-	uint8_t c;
-	if (::read(m_fd, &c, 1) <= 0) {
-		return -1;
-	}
-	return c;
+int serialUtil::read(int n) {
+    //fcntl(m_fd, F_SETFL, FNDELAY);
+    char c;
+    ::read(m_fd, &c, n);
+    return c;
 }

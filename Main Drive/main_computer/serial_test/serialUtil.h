@@ -17,6 +17,5 @@ class serialUtil{
         bool open(speed_t);
         void close();
         void write(std::string);
-        int available(void);
-        int read(void);
+        int read(int);
 };

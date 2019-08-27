@@ -21,8 +21,6 @@ int main(int argc, char *argv[]){
     serialUtil s1(p);
     s1.open(B9600);
 
-    std::cout << s1.available() << std::endl;
-
     if(verifyDevice(s1)){
         std::cout << "Correct Device Connected" << std::endl;
     } else {
@@ -48,7 +46,7 @@ int main(int argc, char *argv[]){
 
 bool verifyDevice(serialUtil& s){
 
-     char c = s.read();
+     char c = s.read(1);
      std::cout << c << std::endl;
      if(c == 'A'){
         s.write("a");

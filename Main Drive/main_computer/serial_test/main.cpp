@@ -40,6 +40,7 @@ int main(int argc, char *argv[]){
     }
     //closes com port
     s1.close();
+    
 
 	return 0;
 }

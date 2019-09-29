@@ -1,0 +1,1 @@
+must be run like this ". ./ROS_Install.sh" without quotes

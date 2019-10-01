@@ -12,7 +12,7 @@ rosdep update
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential
-sudo apt update && apt upgrade -y
+sudo apt update && apt sudo upgrade -y
 source /opt/ros/melodic/setup.bash
 mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws/

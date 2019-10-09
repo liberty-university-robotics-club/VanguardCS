@@ -21,4 +21,4 @@ source devel/setup.bash
 echo To make sure your workspace is properly overlayed by the setup script, make sure ROS_PACKAGE_PATH environment variable includes the directory you\'re in.
 echo $ROS_PACKAGE_PATH
 echo .
-echo Install finished
+echo "Install finished (Unless you did it wrong, then the install is not finished and you will be ridiculed)"

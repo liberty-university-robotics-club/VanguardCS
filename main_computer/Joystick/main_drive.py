@@ -4,10 +4,16 @@
 # Based on information from:
 # https://www.kernel.org/doc/Documentation/input/joystick-api.txt
 
-import os, struct, array, sys, time
-import odrive
-from odrive.enums import *
+import array
+import os
+import struct
+import sys
+import time
 from fcntl import ioctl
+
+import odrive
+from odrive.enums import AXIS_STATE_FULL_CALIBRATION_SEQUENCE, AXIS_STATE_IDLE, AXIS_STATE_CLOSED_LOOP_CONTROL, CTRL_MODE_VELOCITY_CONTROL
+
 
 def odriveStart():
     # Find a connected ODrive (this will block until you connect one)
@@ -16,8 +22,8 @@ def odriveStart():
 
     # Calibrate motor and wait for it to finish
     print("starting calibration...")
-    my_drive.axis0.motor.config.current_lim = 20
-    my_drive.config.brake_resistance = 0.1
+    #my_drive.axis0.motor.config.current_lim = 20
+    #my_drive.config.brake_resistance = 0.1
     my_drive.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
     while my_drive.axis0.current_state != AXIS_STATE_IDLE:
         time.sleep(0.1)
@@ -28,6 +34,14 @@ def odriveStart():
     # To read a value, simply read the property
     print("Bus voltage is " + str(my_drive.vbus_voltage) + "V")
     return my_drive
+
+def handleJSButton(button, value, mydrive):
+    pass
+
+def handleJSAxis(axis, value, mydrive):
+    if axis == "y":
+        mydrive.axis0.controller.vel_setpoint = value * 5
+    
 
 
 def main():
@@ -174,6 +188,7 @@ def main():
                     button = button_map[number]
                     if button:
                         button_states[button] = value
+                        handleJSButton(button, value, mydrive)
                         if value:
                             print("%s pressed" % (button))
                         else:
@@ -184,9 +199,10 @@ def main():
                     if axis:
                         fvalue = value
                         axis_states[axis] = fvalue
+                        #handleJSAxis(axis, fvalue, mydrive)
                         if axis == "y":
                             mydrive.axis0.controller.vel_setpoint = fvalue * 5
-                        print("%s: %.3f" % (axis, fvalue))
+                        print("%.3f - %s: %.3f" % (time, axis, fvalue))
     except KeyboardInterrupt:
         pass
     finally:

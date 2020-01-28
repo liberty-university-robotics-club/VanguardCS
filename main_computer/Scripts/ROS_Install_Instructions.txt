@@ -1,2 +1,0 @@
-first run "sudo whoami"
-then run like this ". ./ROS_Install.sh" without quotes
